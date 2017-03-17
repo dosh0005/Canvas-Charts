@@ -4,9 +4,11 @@ var chartx = {
     , ctx: null
     , valueMin: null
     , valueMax: null
-    , myTotal: 0
+    , myTotal : 0
+    , lbl : null
     , init: function () {
         chartx.addBtnEvent();
+        chartx.lbl = document.getElementById("lbl");
         chartx.canvas = document.getElementById("canvas2d");
         chartx.ctx = chartx.canvas.getContext("2d");
         chartx.getData();
@@ -15,24 +17,25 @@ var chartx = {
         fetch("browsers.json").then(function (response) {
             return response.json();
         }).then(function (jsonResponse) {
-            var s = jsonResponse.segments;
-            chartx.findValue(s);
+            chartx.lbl.innerHTML = jsonResponse.label;
+            chartx.findValue(jsonResponse.segments);
             chartx.data = jsonResponse.segments;
             chartx.drawChartPie();
         });
     }
     , findValue: function (s) {
         var tdata = [];
-        for (var i = 0; i < s.length; i++) {
+       for (var i = 0; i < s.length; i++) {
             tdata.push(s[i].value);
-            chartx.myTotal += s[i].value;
+           chartx.myTotal += s[i].value;
         }
         chartx.valueMax = Math.max(...tdata);
         chartx.valueMin = Math.min(...tdata);
     }
     , drawChartPie: function () {
+        
         //clear the canvas
-        chartx.ctx.clearRect(0, 0, chartx.ctx.width, chartx.ctx.height);
+        chartx.ctx.clearRect(0, 0, chartx.canvas.width, chartx.canvas.height);
         var cx = chartx.canvas.width / 2;
         var cy = chartx.canvas.height / 2;
         var currentAngle = 0;
@@ -83,7 +86,7 @@ var chartx = {
         //clear the canvas
         chartx.ctx.clearRect(0, 0, chartx.canvas.width, chartx.canvas.height);
         var numPoints = chartx.data.length; //number of circles to draw.
-        var padding = 10; //space away from left edge of canvas to start drawing.
+        var padding = 13; //space away from left edge of canvas to start drawing.
         var magnifier = 10;
         var horizontalAxis = chartx.canvas.height / 2; //how far apart to make each x value.
         var currentPoint = 0; //this will become the center of each cirlce.
@@ -92,7 +95,7 @@ var chartx = {
         var colour = "#00FF00";
         for (var i = 0; i < chartx.data.length; i++) {
             var pct = Math.round((chartx.data[i].value / chartx.myTotal) * 100);
-            console.log(chartx.data[i].value, chartx.myTotal);
+            console.log(chartx.data[i].value ,chartx.myTotal);
             console.log("--");
             var a = (0xD0 + Math.round(Math.random() * 0x2F));
             var b = (0xD0 + Math.round(Math.random() * 0x2F));
@@ -112,12 +115,31 @@ var chartx = {
             chartx.ctx.textAlign = "center";
             chartx.ctx.fillStyle = "#000000"; //colour inside the circle
             chartx.ctx.beginPath();
-            if (i % 2) {
-                chartx.ctx.fillText(lbl, x, y + 40 + 6);
+            var dy;
+            if(i%2){
+            dy = y + 40;
             }
-            else {
-                chartx.ctx.fillText(lbl, x, y - 40 + 6);
+            else{
+            dy = y - 40
             }
+            chartx.ctx.fillText(lbl, x, dy + 6);
+            //------------
+            chartx.ctx.save();
+            chartx.ctx.strokeStyle = "#0CF";
+            chartx.ctx.lineWidth = 1;
+            chartx.ctx.beginPath();
+            var midAngle = 90; 
+            chartx.ctx.moveTo(x, y);
+            if(i%2){
+            dy = y + 35;
+            }
+            else{
+            dy = y - 35
+            }
+            chartx.ctx.lineTo(x, dy);
+            chartx.ctx.stroke();
+            
+            //------------
             chartx.ctx.closePath();
             currentPoint = x + radius;
             //move the x value to the end of the circle for the next point  
